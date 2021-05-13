@@ -213,6 +213,21 @@ class AVLTree():
     
         return inlist 
 
+    #so far we are finding the target
+    def delete(self, target):
+        print("self.node.key = ", self.node.key)
+        if self.node.key == target:
+            return self
+        elif target < self.node.key:
+            if self.node.left is not None:
+                self.node.left.delete(target)
+        elif target > self.node.key:
+            if self.node.right is not None:
+                self.node.right.delete(target)
+        return None
+
+    
+    
     def display(self, level=0, pref=''):
         '''
         Display the whole tree (but turned 90 degrees counter-clockwisely). Uses recursive def.
