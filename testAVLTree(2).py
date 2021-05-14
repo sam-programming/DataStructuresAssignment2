@@ -225,8 +225,62 @@ class AVLTree():
             if self.node.right is not None:
                 self.node.right.delete(target)
         return None
+    #new code --------------------------------------------
+    #THIS IS MOSTLY GARBAGE
+    def delete(self, target, prev):
+        print("self.node.key = ", self.node.key)
+        if self.node.key == target:
+            debug("Target Found")
+            if prev == None: #we can assume branch also equals none
+                debug("Deleting root node.")
+                #arbitrarily reconnect left with right
+                self.node.right.reconnect(self.node.left)
+            else:
+                #if there is a right node but not a left node
+                if self.node.right is not None && self.node.left is None:                    
+                    if branch == "left":
+                        prev.node.left = None #disconnect the node
+                        prev.node.left = self.node.right # reconnect the floating node
+                    elif branch == "right":
+                        prev.node.right = None
+                        prev.node.right = self.node.right
+                #if there is a left node but not a right node
+                elif self.node.left is not None && self.node.right is None:
+                    if branch == "left":
+                        prev.node.left = None
+                        prev.node.left.reconnect(self.node.left)
+                    elif branch == "right":
+                        prev.node.right = None
+                        prev.node.right.reconnect(self.node.left)
+                        
+                    
+        elif target < self.node.key:
+            if self.node.left is not None:
+                self.node.left.delete(target, self)
+        elif target > self.node.key:
+            if self.node.right is not None:
+                self.node.right.delete(target, self)
+        return None
 
+    #function to reconnect nodes recursively (if necessary)
+    def reconnect(self, loose_node):
+        if self.node.key < loose_node.key:  #if loose_node.key is less than current node
+            if self.node.left is None:  #check current node's left attachment
+                self.node.left == loose_node # if nothing is there, chuck the loose node onto it
+            else:
+                #otherwise call reconnect on the left node
+                #logic: it must go to the left, but there is no room so we have to go down
+                self.node.left.reconnect(loose_node) 
+        elif self.node.key > loose_node.key: #same but mirror for right hand side
+            if self.node.right is None:
+                self.node.right == loose_node
+            else:
+                self.node.right.reconnect(loose_node)
+        elif self.node.key == loose_node.key :
+            #this is a very unlikely situation
+            print("Value already exists in the AVL Tree.")
     
+    #-----------------------------------------------------------------------------
     
     def display(self, level=0, pref=''):
         '''
