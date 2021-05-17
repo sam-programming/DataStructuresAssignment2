@@ -73,7 +73,7 @@ class AVLTree():
     def rebalance(self):
         ''' 
         Rebalance a particular (sub)tree
-        ''' 
+        '''
         # key inserted. Let's check if we're balanced
         self.update_heights(False)
         self.update_balances(False)
@@ -171,22 +171,53 @@ class AVLTree():
                 else: 
                     node = node.right.node  
         return node 
-    
-    def logical_successor(self, node):
-        ''' 
-        Find the smallese valued node in RIGHT child
-        ''' 
-        node = node.right.node  
+
+    #Original method not used
+    '''
+    def logical_successor(self):
+         
+        Find the smallest valued node in RIGHT child
+        
+        node = self.node.right.node
         if node != None: # just a sanity check  
             
             while node.left != None:
                 debug("LS: traversing: " + str(node.key))
-                if node.left.node == None: 
-                    return node 
+                if node.left.node == None:
+                    print(type(node))
+                    return node
                 else: 
-                    node = node.left.node  
-        return node 
-
+                    node = node.left.node
+        print(type(node))
+        return node
+    '''
+    
+    #find and delete the smallest valued node in right child, return the key
+    def find_successor(self):
+        parent = self.node
+        current = self.node.right.node
+        iteration = 1
+        if current != None:
+            while current.left != None:
+                if current.left.node == None: #we have found the successor
+                    #we need to sever the tie from the parent at parent.left                    
+                    key = current.key
+                    #if this is the first iteration, it will be parent.right that needs
+                    #to be deleted, otherwise parent left will have to be deleted
+                    if iteration == 1:
+                        parent.right.node = None
+                    else:
+                        parent.left.node = None
+                    return key
+                else:
+                    #update values
+                    iteration += 1
+                    parent = current
+                    current = current.left.node
+        #this return never hits in our code, just in case the method is called elsewhere
+        return current.key
+                
+    
     def check_balanced(self):
         if self == None or self.node == None: 
             return True
@@ -198,89 +229,66 @@ class AVLTree():
         
     def inorder_traverse(self):
         if self.node == None:
-            return [] 
+            print("self.node == None")
+            return []            
         
-        inlist = [] 
+        inlist = []
+        #UNDESCRIPTIVE VARIABLE NAMES
         l = self.node.left.inorder_traverse()
-        for i in l: 
+        print("L", l)
+        for i in l:
+            print("i", i)
             inlist.append(i) 
 
         inlist.append(self.node.key)
+        print("Self.node.key = ", self.node.key)
 
-        l = self.node.right.inorder_traverse()
-        for i in l: 
-            inlist.append(i) 
+        r = self.node.right.inorder_traverse()
+        print("R", r)
+        for x in r:
+            print("x", x)
+            inlist.append(x) 
     
         return inlist 
 
-    #so far we are finding the target
+    #Delete a given element in an AVL Tree
     def delete(self, target):
-        print("self.node.key = ", self.node.key)
-        if self.node.key == target:
-            return self
-        elif target < self.node.key:
-            if self.node.left is not None:
-                self.node.left.delete(target)
+        if self is None:
+            print("Value not found")
+        #if target is lower, then traverse the left subtree
+        if target < self.node.key:
+            self.node.left.delete(target)
+        #if target is higher, then traverse the right subtree
         elif target > self.node.key:
-            if self.node.right is not None:
-                self.node.right.delete(target)
-        return None
-    #new code --------------------------------------------
-    #THIS IS MOSTLY GARBAGE
-    def delete(self, target, prev):
-        print("self.node.key = ", self.node.key)
-        if self.node.key == target:
-            debug("Target Found")
-            if prev == None: #we can assume branch also equals none
-                debug("Deleting root node.")
-                #arbitrarily reconnect left with right
-                self.node.right.reconnect(self.node.left)
+            self.node.right.delete(target)
+        #found
+        else:
+            debug("Deleting key [" + str(self.node.key) + "]")
+            if self.is_leaf():
+                debug("Deleting leaf")
+                self.node = None
+            #node has a right child but not a left child
+            elif self.node.right.node is not None and self.node.left.node is None:
+                #three way swap
+                debug("Swapping right node")
+                temp = self.node.right.node
+                self.node.right.node = None
+                self.node = temp
+            elif self.node.right.node is None and self.node.left.node is not None:
+                debug("Swapping left node")
+                temp = self.node.left.node
+                self.node.left.node = None               
+                self.node = temp
+            #else if the node has two children
             else:
-                #if there is a right node but not a left node
-                if self.node.right is not None && self.node.left is None:                    
-                    if branch == "left":
-                        prev.node.left = None #disconnect the node
-                        prev.node.left = self.node.right # reconnect the floating node
-                    elif branch == "right":
-                        prev.node.right = None
-                        prev.node.right = self.node.right
-                #if there is a left node but not a right node
-                elif self.node.left is not None && self.node.right is None:
-                    if branch == "left":
-                        prev.node.left = None
-                        prev.node.left.reconnect(self.node.left)
-                    elif branch == "right":
-                        prev.node.right = None
-                        prev.node.right.reconnect(self.node.left)
-                        
-                    
-        elif target < self.node.key:
-            if self.node.left is not None:
-                self.node.left.delete(target, self)
-        elif target > self.node.key:
-            if self.node.right is not None:
-                self.node.right.delete(target, self)
-        return None
-
-    #function to reconnect nodes recursively (if necessary)
-    def reconnect(self, loose_node):
-        if self.node.key < loose_node.key:  #if loose_node.key is less than current node
-            if self.node.left is None:  #check current node's left attachment
-                self.node.left == loose_node # if nothing is there, chuck the loose node onto it
-            else:
-                #otherwise call reconnect on the left node
-                #logic: it must go to the left, but there is no room so we have to go down
-                self.node.left.reconnect(loose_node) 
-        elif self.node.key > loose_node.key: #same but mirror for right hand side
-            if self.node.right is None:
-                self.node.right == loose_node
-            else:
-                self.node.right.reconnect(loose_node)
-        elif self.node.key == loose_node.key :
-            #this is a very unlikely situation
-            print("Value already exists in the AVL Tree.")
-    
-    #-----------------------------------------------------------------------------
+                #get the leftmost leaf of the right tree
+                # need to clear the node in the logical_successor method
+                # and return the key only
+                debug("Swapping logical successor")
+                successor = self.find_successor()
+                self.node.key = successor
+        self.rebalance()
+        
     
     def display(self, level=0, pref=''):
         '''
@@ -296,34 +304,46 @@ class AVLTree():
                 self.node.right.display(level + 1, '>')
         
 
+    def display_tree(self):
+        level = 1
+        indent = 4
+        dash = " _ " * indent
+        current = self.node
+        print(dash, current.key, dash)
+       # while current.left.node is not None or current.right.node is not None:
+            #level *= 2
+            
 
 
 # Usage example
 if __name__ == "__main__": 
-    a = AVLTree()
-    print ("----- Inserting -------")
-    #inlist1 = [5, 2, 12, -4, 3, 21, 19, 25]
-    #b=AVLTree(inlist1)
-    #b.display()
+    tree = AVLTree()
+    nodes = [50, 30, 70, 20, 40, 60, 80, 37, 36]
     
-    inlist = [55, 81, 65, 20, 35, 79, 23, 14, 21, 103, 92, 45, 85, 51, 47, 48, 50, 46 ]
-    print(inlist)
-    for i in inlist: 
-        a.insert(i)
-    print ("Inorder traversal:", a.inorder_traverse())
-         
-    a.display()
+    
+    for i in nodes: 
+        tree.insert(i)
+ 
+    tree.display()
+    print("\n")
+    tree.delete(80)
+    print("\n")
+    tree.display()
+    print("\n")
+    tree.delete(70)
+    print("\n")
+    tree.display()
+    print("\n")
+    tree.insert(32)
+    print("\n")
+    tree.insert(32)
+    print("\n")
+    tree.display()
+    print("\n")
+    print("Delete Root")
+    tree.delete(37) #delete root note
+    print("\n")
+    tree.display()
    
-    
 
 
-#def main(size = 20, sort = heapSort):
-#   lyst = []
-#    for count in range(size):
-#        lyst.append(random.randint(1, size*5 + 1))
-#    print(lyst)
-#    sort(lyst)
-#    print(lyst)
-
-#if __name__ == "__main__":
-#    main() 
