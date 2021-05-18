@@ -5,7 +5,7 @@ Tests the AVL tree building algorithm
 """
 import random, math
 
-outputdebug = True 
+outputdebug = False 
 
 def debug(msg):
     if outputdebug:
@@ -55,7 +55,7 @@ class AVLTree():
             self.node = newnode   #create new node
             self.node.left = AVLTree()  #instantiate left and right nodes
             self.node.right = AVLTree()
-            debug("Inserted key [" + str(key) + "]")
+            print("Inserted key [" + str(key) + "]")
             
         #else if there is a value there
         #if less
@@ -66,7 +66,7 @@ class AVLTree():
             self.node.right.insert(key)
         # else thing is already in the tree
         else: 
-            debug("Key [" + str(key) + "] already in tree.")
+            print("Key [" + str(key) + "] already in tree.")
         #finally call rebalance
         self.rebalance() 
         
@@ -229,41 +229,78 @@ class AVLTree():
         
     def inorder_traverse(self):
         if self.node == None:
-            print("self.node == None")
+            debug("self.node == None")
             return []            
         
         inlist = []
         #UNDESCRIPTIVE VARIABLE NAMES
         l = self.node.left.inorder_traverse()
-        print("L", l)
+        debug("L" + str(l))
         for i in l:
-            print("i", i)
+            debug("i" + str( i))
             inlist.append(i) 
 
         inlist.append(self.node.key)
-        print("Self.node.key = ", self.node.key)
+        debug("Self.node.key = " + str(self.node.key))
 
         r = self.node.right.inorder_traverse()
-        print("R", r)
+        debug("R" + str(r))
         for x in r:
-            print("x", x)
+            debug("x" + str(x))
             inlist.append(x) 
     
         return inlist 
 
+    def find_leafs(self):
+        if self.node == None:
+            return []
+        leafs = []
+        left = self.node.left.find_leafs()
+        for val in left:
+            leafs.append(val)
+            
+        if self.is_leaf():
+            leafs.append(self.node.key)
+        debug(str(self.node.key))
+
+        right = self.node.right.find_leafs()
+        for val in right:
+            leafs.append(val)
+        
+        return leafs
+        
+    def find_parents(self):
+        if self.node == None:
+            return []
+        parents = []
+        left = self.node.left.find_parents()
+        for val in left:
+            parents.append(val)
+        
+        if not self.is_leaf():
+            parents.append(self.node.key)
+            debug(str(self.node.key))
+
+        right = self.node.right.find_parents()
+        for val in right:
+            parents.append(val)
+
+        return parents
+    
     #Delete a given element in an AVL Tree
     def delete(self, target):
-        if self is None:
+        # if the value is not in the tree, print message
+        if self.node is None:
             print("Value not found")
         #if target is lower, then traverse the left subtree
-        if target < self.node.key:
+        elif target < self.node.key:
             self.node.left.delete(target)
         #if target is higher, then traverse the right subtree
         elif target > self.node.key:
             self.node.right.delete(target)
         #found
         else:
-            debug("Deleting key [" + str(self.node.key) + "]")
+            print("Deleting key [" + str(self.node.key) + "]")
             if self.is_leaf():
                 debug("Deleting leaf")
                 self.node = None
@@ -296,23 +333,14 @@ class AVLTree():
         '''        
         self.update_heights()  # Must update heights before balances 
         self.update_balances()  
-        if(self.node != None): 
+        if(self.node != None):
+            #This doesn't work on python versions < 3
             print ('-' * level * 2, pref, self.node.key, "[" + str(self.height) + ":" + str(self.balance) + "]", 'L' if self.is_leaf() else ' ')    
             if self.node.left != None: 
                 self.node.left.display(level + 1, '<')
             if self.node.left != None:
                 self.node.right.display(level + 1, '>')
         
-
-    def display_tree(self):
-        level = 1
-        indent = 4
-        dash = " _ " * indent
-        current = self.node
-        print(dash, current.key, dash)
-       # while current.left.node is not None or current.right.node is not None:
-            #level *= 2
-            
 
 
 # Usage example
@@ -323,27 +351,32 @@ if __name__ == "__main__":
     
     for i in nodes: 
         tree.insert(i)
- 
+
     tree.display()
-    print("\n")
-    tree.delete(80)
-    print("\n")
-    tree.display()
-    print("\n")
-    tree.delete(70)
-    print("\n")
-    tree.display()
-    print("\n")
-    tree.insert(32)
-    print("\n")
-    tree.insert(32)
-    print("\n")
-    tree.display()
-    print("\n")
-    print("Delete Root")
-    tree.delete(37) #delete root note
-    print("\n")
-    tree.display()
+    leafs = tree.find_leafs()
+    parents = tree.find_parents()
+    print("Leafs:" , leafs)
+    print("Parents", parents)
+##    tree.display()
+##    print("\n")
+##    tree.delete(80)
+##    print("\n")
+##    tree.display()
+##    print("\n")
+##    tree.delete(70)
+##    print("\n")
+##    tree.display()
+##    print("\n")
+##    tree.insert(32)
+##    print("\n")
+##    tree.insert(32)
+##    print("\n")
+##    tree.display()
+##    print("\n")
+##    print("Delete Root")
+##    tree.delete(37) #delete root note
+##    print("\n")
+##    tree.display()
    
 
 
