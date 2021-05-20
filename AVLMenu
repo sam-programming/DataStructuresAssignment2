@@ -57,6 +57,7 @@ def menu():
                     keys = tree.inorder_traverse()
                     if val in keys:
                         tree.delete(val)
+                        tree.rebalance()
                         print("New Tree:")
                         tree.display()
                     else:
