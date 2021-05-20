@@ -191,32 +191,26 @@ class AVLTree():
         print(type(node))
         return node
     '''
-    #Method written by Samuel Warner
-    # 18/05/21
-    #Finds and deletes the smallest valued node in right child, return the key
-    def find_successor(self):
-        parent = self.node
-        current = self.node.right.node
+    
+    #find and delete the smallest valued node in right child, return the key
+    def find_successor(self):        
+        parent = self
+        current = self.node.right
         iteration = 1
-        if current != None:
-            while current.left != None:
-                if current.left.node == None: #we have found the successor
+        if current.node != None:            
+            while current.node.left.node != None:
+                parent = current
+                current = current.node.left
+                print("Curr", current.node.key)
+                if current.node.left == None: #we have found the successor
                     #we need to sever the tie from the parent at parent.left                    
-                    key = current.key
-                    #if this is the first iteration, it will be parent.right that needs
-                    #to be deleted, otherwise parent left will have to be deleted
-                    if iteration == 1:
-                        parent.right.node = None
-                    else:
-                        parent.left.node = None
-                    return key
-                else:
-                    #update values
-                    iteration += 1
-                    parent = current
-                    current = current.left.node
-        #this return never hits in our code, just in case the method is called elsewhere
-        return current.key
+                    key = current.node.key
+                    #call delete on the parent
+                    parent.delete(key)
+        #if it gets this far then the element is the right most element
+        key = current.node.key
+        parent.delete(key)
+        return key
                 
     
     def check_balanced(self):
@@ -250,11 +244,8 @@ class AVLTree():
             debug("x" + str(x))
             inlist.append(x) 
     
-        return inlist
-    
-    # Method written by Samuel Warner
-    # 17/05/21
-    # Using recursion, traverses the tree and finds all leaf nodes
+        return inlist 
+
     def find_leafs(self):
         if self.node == None:
             return []
@@ -272,10 +263,7 @@ class AVLTree():
             leafs.append(val)
         
         return leafs
-    
-    # Method written by Samuel Warner
-    # 17/05/21
-    # Using recursion, traverses the tree and finds all parent nodes 
+        
     def find_parents(self):
         if self.node == None:
             return []
@@ -294,9 +282,7 @@ class AVLTree():
 
         return parents
     
-    # Method written by Samuel Warner
-    # 16/05/21
-    # Delete a given element in an AVL Tree
+    #Delete a given element in an AVL Tree
     def delete(self, target):
         # if the value is not in the tree, print message
         if self.node is None:
@@ -310,32 +296,30 @@ class AVLTree():
         #found
         else:
             print("Deleting key [" + str(self.node.key) + "]")
-            #if node is leaf, delete it and that's it
             if self.is_leaf():
                 debug("Deleting leaf")
                 self.node = None
             #node has a right child but not a left child
             elif self.node.right.node is not None and self.node.left.node is None:
-                #Swap nodes and delete
+                #three way swap
                 debug("Swapping right node")
                 temp = self.node.right.node
                 self.node.right.node = None
                 self.node = temp
             elif self.node.right.node is None and self.node.left.node is not None:
-                #Swap nodes and delete
                 debug("Swapping left node")
                 temp = self.node.left.node
                 self.node.left.node = None               
                 self.node = temp
             #else if the node has two children
             else:
-                # get the leftmost leaf of the right tree
-                # delete the node in the logical_successor method
-                # and return the leftmost node's key only
+                #get the leftmost leaf of the right tree
+                # need to clear the node in the logical_successor method
+                # and return the key only
                 debug("Swapping logical successor")
                 successor = self.find_successor()
                 self.node.key = successor
-        self.rebalance()
+        
         
     
     def display(self, level=0, pref=''):
@@ -354,10 +338,11 @@ class AVLTree():
         
 
 
-# Testing
+# Usage example
 if __name__ == "__main__": 
     tree = AVLTree()
-    nodes = [50, 30, 70, 20, 40, 60, 80, 37, 36]   
+    nodes = [50, 30, 70, 20, 40, 60, 80, 37, 36]
+    
     
     for i in nodes: 
         tree.insert(i)
@@ -367,6 +352,8 @@ if __name__ == "__main__":
     parents = tree.find_parents()
     print("Leafs:" , leafs)
     print("Parents", parents)
+    tree.delete(20)
+    tree.display()
 ##    tree.display()
 ##    print("\n")
 ##    tree.delete(80)
