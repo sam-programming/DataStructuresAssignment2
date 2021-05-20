@@ -100,7 +100,7 @@ class AVLTree():
     #If left subtree is unbalanced       
     def rrotate(self):
         # Rotate left pivoting on self, an unbalanced part of the tree
-        debug ('Rotating ' + str(self.node.key) + ' right')
+        print('Rotating node ' + str(self.node.key) + ' right')
         #silly debug says it is rotating 1 value but its rotating three
         A = self.node  #a is the node of the tree passed a parameter
         B = self.node.left.node  #b is a's left node
@@ -123,7 +123,7 @@ class AVLTree():
     
     def lrotate(self):
         # Rotate left pivoting on self
-        debug ('Rotating ' + str(self.node.key) + ' left') 
+        print('Rotating node ' + str(self.node.key) + ' left') 
         A = self.node 
         B = self.node.right.node 
         T = B.left.node 
@@ -191,8 +191,9 @@ class AVLTree():
         print(type(node))
         return node
     '''
-    
-    #find and delete the smallest valued node in right child, return the key
+    #Method written by Samuel Warner
+    # 18/05/21
+    #Finds and deletes the smallest valued node in right child, return the key
     def find_successor(self):
         parent = self.node
         current = self.node.right.node
@@ -249,8 +250,11 @@ class AVLTree():
             debug("x" + str(x))
             inlist.append(x) 
     
-        return inlist 
-
+        return inlist
+    
+    # Method written by Samuel Warner
+    # 17/05/21
+    # Using recursion, traverses the tree and finds all leaf nodes
     def find_leafs(self):
         if self.node == None:
             return []
@@ -268,7 +272,10 @@ class AVLTree():
             leafs.append(val)
         
         return leafs
-        
+    
+    # Method written by Samuel Warner
+    # 17/05/21
+    # Using recursion, traverses the tree and finds all parent nodes 
     def find_parents(self):
         if self.node == None:
             return []
@@ -287,7 +294,9 @@ class AVLTree():
 
         return parents
     
-    #Delete a given element in an AVL Tree
+    # Method written by Samuel Warner
+    # 16/05/21
+    # Delete a given element in an AVL Tree
     def delete(self, target):
         # if the value is not in the tree, print message
         if self.node is None:
@@ -301,26 +310,28 @@ class AVLTree():
         #found
         else:
             print("Deleting key [" + str(self.node.key) + "]")
+            #if node is leaf, delete it and that's it
             if self.is_leaf():
                 debug("Deleting leaf")
                 self.node = None
             #node has a right child but not a left child
             elif self.node.right.node is not None and self.node.left.node is None:
-                #three way swap
+                #Swap nodes and delete
                 debug("Swapping right node")
                 temp = self.node.right.node
                 self.node.right.node = None
                 self.node = temp
             elif self.node.right.node is None and self.node.left.node is not None:
+                #Swap nodes and delete
                 debug("Swapping left node")
                 temp = self.node.left.node
                 self.node.left.node = None               
                 self.node = temp
             #else if the node has two children
             else:
-                #get the leftmost leaf of the right tree
-                # need to clear the node in the logical_successor method
-                # and return the key only
+                # get the leftmost leaf of the right tree
+                # delete the node in the logical_successor method
+                # and return the leftmost node's key only
                 debug("Swapping logical successor")
                 successor = self.find_successor()
                 self.node.key = successor
@@ -343,11 +354,10 @@ class AVLTree():
         
 
 
-# Usage example
+# Testing
 if __name__ == "__main__": 
     tree = AVLTree()
-    nodes = [50, 30, 70, 20, 40, 60, 80, 37, 36]
-    
+    nodes = [50, 30, 70, 20, 40, 60, 80, 37, 36]   
     
     for i in nodes: 
         tree.insert(i)
