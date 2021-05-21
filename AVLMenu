@@ -27,8 +27,10 @@ def menu():
             #display the tree
             tree.display()
         elif usr_choice == 2:
-            #don't need to do anything here
-            pass
+            arr = Get_Manual_Input()
+            if len(arr) != 0:
+                for val in arr:
+                    tree.insert(val)
         while menu_choice != 6:
             #second menu with tree manipulation and traversal
             print("\nSelect the menu item to manipulate or view the AVL Tree.")
@@ -58,10 +60,11 @@ def menu():
                     if val in keys:
                         tree.delete(val)
                         tree.rebalance()
-                        print("New Tree:")
-                        tree.display()
+                        if tree.height != -1:
+                            print("New Tree:")
+                            tree.display()
                     else:
-                        print("Current AVL Tree does not contain value", val)
+                        print("AVL Tree does not contain value", val)
                 else:
                     print("Tree is empty.")
             #3) Inorder traversal of the tree
@@ -91,6 +94,20 @@ def menu():
                 break
                     
 
+def Get_Manual_Input():
+    arr = []
+    print("Enter an integer, or x to stop")
+    usr_in = input("")
+    while usr_in != "x" or usr_in != "X":
+        try:
+            val = int(usr_in)
+            arr.append(val)
+        except:
+            print("Invalid input.")
+        print("Enter another integer, or x to stop")
+        usr_in = input("")
+    return arr
+            
 
 #input validation method
 def Get_User_Choice(max_opts):
