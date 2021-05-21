@@ -4,8 +4,9 @@ import random as ran
 
 def menu():
     usr_choice = 0
-    
-    print("------ AVLTree Testing ------\n")
+    print("------------------------------")
+    print("------ AVL Tree Testing ------")
+    print("------------------------------")
     while usr_choice != 3:
         menu_choice = 0
         #create new tree object
@@ -23,7 +24,7 @@ def menu():
             print("Values to be placed in AVL Tree:\n", arr)            
             for val in arr:
                 tree.insert(val)
-            print("\nAVL Tree")
+            print("\nAVL Tree (", tree.count_nodes(), " nodes)", sep='')
             #display the tree
             tree.display()
         elif usr_choice == 2:
@@ -31,7 +32,9 @@ def menu():
             if len(arr) != 0:
                 for val in arr:
                     tree.insert(val)
-        while menu_choice != 6:
+                print("AVL Tree (", tree.count_nodes(), " nodes)", sep='')
+                tree.display()
+        while menu_choice != 6 and usr_choice != 3:
             #second menu with tree manipulation and traversal
             print("\nSelect the menu item to manipulate or view the AVL Tree.")
             Tree_Menu()
@@ -45,6 +48,7 @@ def menu():
                 keys = tree.inorder_traverse()
                 if val not in keys:
                     tree.insert(val)
+                    print("AVL Tree (", tree.count_nodes(), " nodes)", sep='')
                     tree.display()
                 else:
                     print(val, "is already present in the current AVL Tree.")
@@ -52,6 +56,7 @@ def menu():
             elif menu_choice == 2:
                 #if tree is not empty
                 if tree.height != -1:
+                    print("AVL Tree (", tree.count_nodes(), " nodes)", sep='')
                     tree.display()
                     print("Delete a value in the AVL Tree.")
                     val = Get_User_Int()
@@ -61,8 +66,8 @@ def menu():
                         tree.delete(val)
                         tree.rebalance()
                         if tree.height != -1:
-                            print("New Tree:")
-                            tree.display()
+                            print("AVL Tree (", tree.count_nodes(), " nodes)", sep='')
+                            tree.display()                            
                     else:
                         print("AVL Tree does not contain value", val)
                 else:
@@ -87,9 +92,9 @@ def menu():
                     print("AVL Tree is empty.")
             #5) Calls display()
             elif menu_choice == 5:
-                print("\n")
+                print("")
+                print("AVL Tree (", tree.count_nodes(), " nodes)", sep='')
                 tree.display()
-                print("\n")
             elif menu_choice == 6:
                 break
                     
@@ -98,7 +103,7 @@ def Get_Manual_Input():
     arr = []
     print("Enter an integer, or x to stop")
     usr_in = input("")
-    while usr_in != "x" or usr_in != "X":
+    while usr_in != "x":
         try:
             val = int(usr_in)
             arr.append(val)
