@@ -191,26 +191,32 @@ class AVLTree():
         print(type(node))
         return node
     '''
-    
-    #find and delete the smallest valued node in right child, return the key
-    def find_successor(self):        
-        parent = self
-        current = self.node.right
+    #Method written by Samuel Warner
+    # 18/05/21
+    #Finds and deletes the smallest valued node in right child, return the key
+    def find_successor(self):
+        parent = self.node
+        current = self.node.right.node
         iteration = 1
-        if current.node != None:            
-            while current.node.left.node != None:
-                parent = current
-                current = current.node.left
-                print("Curr", current.node.key)
-                if current.node.left == None: #we have found the successor
+        if current != None:
+            while current.left != None:
+                if current.left.node == None: #we have found the successor
                     #we need to sever the tie from the parent at parent.left                    
-                    key = current.node.key
-                    #call delete on the parent
-                    parent.delete(key)
-        #if it gets this far then the element is the right most element
-        key = current.node.key
-        parent.delete(key)
-        return key
+                    key = current.key
+                    #if this is the first iteration, it will be parent.right that needs
+                    #to be deleted, otherwise parent left will have to be deleted
+                    if iteration == 1:
+                        parent.right.node = None
+                    else:
+                        parent.left.node = None
+                    return key
+                else:
+                    #update values
+                    iteration += 1
+                    parent = current
+                    current = current.left.node
+        #this return never hits in our code, just in case the method is called elsewhere
+        return current.key
                 
     
     def check_balanced(self):
@@ -244,8 +250,11 @@ class AVLTree():
             debug("x" + str(x))
             inlist.append(x) 
     
-        return inlist 
-
+        return inlist
+    
+    # Method written by Samuel Warner
+    # 17/05/21
+    # Using recursion, traverses the tree and finds all leaf nodes
     def find_leafs(self):
         if self.node == None:
             return []
@@ -263,7 +272,10 @@ class AVLTree():
             leafs.append(val)
         
         return leafs
-        
+    
+    # Method written by Samuel Warner
+    # 17/05/21
+    # Using recursion, traverses the tree and finds all parent nodes 
     def find_parents(self):
         if self.node == None:
             return []
@@ -282,7 +294,9 @@ class AVLTree():
 
         return parents
     
-    #Delete a given element in an AVL Tree
+    # Method written by Samuel Warner
+    # 16/05/21
+    # Delete a given element in an AVL Tree
     def delete(self, target):
         # if the value is not in the tree, print message
         if self.node is None:
@@ -296,32 +310,59 @@ class AVLTree():
         #found
         else:
             print("Deleting key [" + str(self.node.key) + "]")
+            #if node is leaf, delete it and that's it
             if self.is_leaf():
                 debug("Deleting leaf")
                 self.node = None
             #node has a right child but not a left child
             elif self.node.right.node is not None and self.node.left.node is None:
-                #three way swap
+                #Swap nodes and delete
                 debug("Swapping right node")
                 temp = self.node.right.node
                 self.node.right.node = None
                 self.node = temp
             elif self.node.right.node is None and self.node.left.node is not None:
+                #Swap nodes and delete
                 debug("Swapping left node")
                 temp = self.node.left.node
                 self.node.left.node = None               
                 self.node = temp
             #else if the node has two children
             else:
-                #get the leftmost leaf of the right tree
-                # need to clear the node in the logical_successor method
-                # and return the key only
+                # get the leftmost leaf of the right tree
+                # delete the node in the logical_successor method
+                # and return the leftmost node's key only
                 debug("Swapping logical successor")
                 successor = self.find_successor()
                 self.node.key = successor
+        self.rebalance()
         
-        
-    
+    #Counts the number of nodes in a tree. This code is adapted from:    
+    #Awasthi, S. (Last Updated: Mar, 2019). Count Full Nodes in a Binary Tree.
+    #GeeksForGeeks, https://www.geeksforgeeks.org/count-full-nodes-binary-tree-iterative-recursive/
+                
+    def count_nodes(self):
+        if self == None:
+            return 0
+
+        queue = []
+        queue.append(self)
+
+        nodes = 0
+        while(len(queue) > 0):
+            tree = queue.pop(0)
+            if tree.node is not None:
+                if tree.node.left is not None and tree.node.right is not None:
+                    nodes += 1
+
+                if tree.node.left is not None:
+                    queue.append(tree.node.left)
+
+                if tree.node.right is not None:
+                    queue.append(tree.node.right)
+
+        return nodes
+
     def display(self, level=0, pref=''):
         '''
         Display the whole tree (but turned 90 degrees counter-clockwisely). Uses recursive def.
@@ -335,25 +376,33 @@ class AVLTree():
                 self.node.left.display(level + 1, '<')
             if self.node.left != None:
                 self.node.right.display(level + 1, '>')
-        
 
+                
 
-# Usage example
+#generate a set (unique vals) of random numbers
+def Generate_Set(n):
+    arr = []
+    valid = False
+    for count in range(n):
+        num = ran.randint(1, n*5 + 1)
+        #if the num generated is in the array, generate another
+        while num in arr:
+            num = ran.randint(1, n*5 + 1)
+        arr.append(num)
+    return arr
+
+# Testing
 if __name__ == "__main__": 
     tree = AVLTree()
-    nodes = [50, 30, 70, 20, 40, 60, 80, 37, 36]
-    
-    
-    for i in nodes: 
-        tree.insert(i)
+    nodes = [50, 30, 70, 20, 40, 60, 80, 37, 36, 44]
+    for i in range(9, -1, -1):
+        print(nodes[i])
 
     tree.display()
     leafs = tree.find_leafs()
     parents = tree.find_parents()
     print("Leafs:" , leafs)
     print("Parents", parents)
-    tree.delete(20)
-    tree.display()
 ##    tree.display()
 ##    print("\n")
 ##    tree.delete(80)
