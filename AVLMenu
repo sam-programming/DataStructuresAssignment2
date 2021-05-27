@@ -1,407 +1,160 @@
-"""
-File: testAVLtree.py
+#Menu Program for AVL Tree testing
+import AVLTree as avl
+import random as ran
 
-Tests the AVL tree building algorithm
-"""
-import random, math
+def menu():
+    usr_choice = 0
+    print("------------------------------")
+    print("------ AVL Tree Testing ------")
+    print("------------------------------")
+    while usr_choice != 3:
+        menu_choice = 0
+        #create new tree object
+        tree = avl.AVLTree()
+        #initial menu to decide how to construct tree
+        print("\nSelect the menu item to navigate the menu.")
+        print("1) Pre-load a sequence of integers to build an AVL Tree.")
+        print("2) Manually Create an AVL Tree starting from the Root Node.")
+        print("3) Exit.")
+        #input validate user menu choice
+        usr_choice = Get_User_Choice(3)
+        if usr_choice == 1: #pre-load values
+            #test values from assignment brief
+            arr = [55, 81, 65, 20, 35, 79, 23, 14, 21, 103, 92, 45, 85, 51, 47, 48, 50, 416]
+            print("Values to be placed in AVL Tree:\n", arr)            
+            for val in arr:
+                tree.insert(val)
+            print("\nAVL Tree (", tree.count_nodes(), " nodes)", sep='')
+            #display the tree
+            tree.display()
+        elif usr_choice == 2:
+            arr = Get_Manual_Input()
+            if len(arr) != 0:
+                for val in arr:
+                    tree.insert(val)
+                print("AVL Tree (", tree.count_nodes(), " nodes)", sep='')
+                tree.display()
+        while menu_choice != 6 and usr_choice != 3:
+            #second menu with tree manipulation and traversal
+            print("\nSelect the menu item to manipulate or view the AVL Tree.")
+            Tree_Menu()
+            #input for the second menu choice
+            menu_choice = Get_User_Choice(6)
+            #1) Insert key into avl tree
+            if menu_choice == 1:
+                val = Get_User_Int()
+                #make sure value is not already in the tree
+                #this is just a presentation measure so the tree is not displayed too often
+                keys = tree.inorder_traverse()
+                if val not in keys:
+                    tree.insert(val)
+                    print("AVL Tree (", tree.count_nodes(), " nodes)", sep='')
+                    tree.display()
+                else:
+                    print(val, "is already present in the current AVL Tree.")
+            #2) Delete key
+            elif menu_choice == 2:
+                #if tree is not empty
+                if tree.height != -1:
+                    print("AVL Tree (", tree.count_nodes(), " nodes)", sep='')
+                    tree.display()
+                    print("Delete a value in the AVL Tree.")
+                    val = Get_User_Int()
+                    #make sure value is in the tree
+                    keys = tree.inorder_traverse()
+                    if val in keys:
+                        tree.delete(val)
+                        tree.rebalance()
+                        if tree.height != -1:
+                            print("AVL Tree (", tree.count_nodes(), " nodes)", sep='')
+                            tree.display()                            
+                    else:
+                        print("AVL Tree does not contain value", val)
+                else:
+                    print("Tree is empty.")
+            #3) Inorder traversal of the tree
+            elif menu_choice == 3:
+                print("Inorder Traversal:")
+                #uses the AVL Tree class method inorder_traverse()
+                traversal = tree.inorder_traverse()
+                print(traversal)
+            #4) Print leaf and non-leaf (parent) nodes seperately
+            elif menu_choice == 4:
+                if tree.height != -1:
+                    #uses the AVL Tree class methods find_leafs() and find_parents()
+                    leafs = tree.find_leafs()
+                    parents = tree.find_parents()                    
+                    print("Leaf nodes for AVL Tree:")
+                    print(leafs)                    
+                    print("Non-Leaf nodes for AVL Tree:")
+                    print(parents)
+                else:
+                    print("AVL Tree is empty.")
+            #5) Calls display()
+            elif menu_choice == 5:
+                print("")
+                print("AVL Tree (", tree.count_nodes(), " nodes)", sep='')
+                tree.display()
+            elif menu_choice == 6:
+                break
+                    
 
-outputdebug = False 
-
-def debug(msg):
-    if outputdebug:
-        print (msg)
-        
-#Binary Tree Node with left child and right child
-class Node():
-    def __init__(self, key):
-        self.key = key  #this is the value of the node
-        self.left = None 
-        self.right = None 
-
-
-#AVL Tree Class
-class AVLTree():
-    #self, plus variable number of arguments
-    def __init__(self, *args):
-        self.node = None  #no nodes
-        self.height = -1  #empty tree has a height (depth) of -1
-        self.balance = 0; #balance is left_height - right_height
-
-        #if only one argument
-        if len(args) == 1: 
-            for i in args[0]: 
-                self.insert(i) #call insert on that argument
-                
-    def height(self):
-        if self.node: 
-            return self.node.height 
-        else: 
-            return 0 
-    
-    def is_leaf(self):
-        return (self.height == 0) #if height is 0, this is a leaf node
-
-    #key is the value to be inserted
-    def insert(self, key):
-        
-        #get the current node
-        tree = self.node
-        
-        #create a new node
-        newnode = Node(key)
-
-        #if self.node == None
-        if tree == None:
-            self.node = newnode   #create new node
-            self.node.left = AVLTree()  #instantiate left and right nodes
-            self.node.right = AVLTree()
-            print("Inserted key [" + str(key) + "]")
+def Get_Manual_Input():
+    arr = []
+    print("Enter an integer, or x to stop")
+    usr_in = input("")
+    while usr_in != "x":
+        try:
+            val = int(usr_in)
+            arr.append(val)
+        except:
+            print("Invalid input.")
+        print("Enter another integer, or x to stop")
+        usr_in = input("")
+    return arr
             
-        #else if there is a value there
-        #if less
-        elif key < tree.key: 
-            self.node.left.insert(key)
-        #else if greater
-        elif key > tree.key: 
-            self.node.right.insert(key)
-        # else thing is already in the tree
-        else: 
-            print("Key [" + str(key) + "] already in tree.")
-        #finally call rebalance
-        self.rebalance() 
-        
-    def rebalance(self):
-        ''' 
-        Rebalance a particular (sub)tree
-        '''
-        # key inserted. Let's check if we're balanced
-        self.update_heights(False)
-        self.update_balances(False)
-        while self.balance < -1 or self.balance > 1: #if height difference is larger than 1 or -1
-            if self.balance > 1:
-                if self.node.left.balance < 0:  
-                    self.node.left.lrotate() # we're in case II
-                    self.update_heights()
-                    self.update_balances()
-                self.rrotate()
-                self.update_heights()
-                self.update_balances()
-                
-            if self.balance < -1:
-                if self.node.right.balance > 0:  
-                    self.node.right.rrotate() # we're in case III
-                    self.update_heights()
-                    self.update_balances()
-                self.lrotate()
-                self.update_heights()
-                self.update_balances()
 
-
-    #If left subtree is unbalanced       
-    def rrotate(self):
-        # Rotate left pivoting on self, an unbalanced part of the tree
-        print('Rotating node ' + str(self.node.key) + ' right')
-        #silly debug says it is rotating 1 value but its rotating three
-        A = self.node  #a is the node of the tree passed a parameter
-        B = self.node.left.node  #b is a's left node
-        T = B.right.node         #t is b's right node
-
-        #       A
-        #      / 
-        #     B   
-        #      \
-        #       T
-        
-        self.node = B     #A becomes B
-        B.right.node = A  #T becomes A
-        A.left.node = T   #B becomes T
-
-        #       B
-        #      / \
-        #     T   A
-
-    
-    def lrotate(self):
-        # Rotate left pivoting on self
-        print('Rotating node ' + str(self.node.key) + ' left') 
-        A = self.node 
-        B = self.node.right.node 
-        T = B.left.node 
-        
-        self.node = B 
-        B.left.node = A 
-        A.right.node = T 
-        
-            
-    def update_heights(self, recurse=True):
-        if not self.node == None: 
-            if recurse: 
-                if self.node.left != None: 
-                    self.node.left.update_heights()
-                if self.node.right != None:
-                    self.node.right.update_heights()
-            
-            self.height = max(self.node.left.height,
-                              self.node.right.height) + 1 
-        else: 
-            self.height = -1 
-            
-    def update_balances(self, recurse=True):
-        if not self.node == None: 
-            if recurse: 
-                if self.node.left != None: 
-                    self.node.left.update_balances()
-                if self.node.right != None:
-                    self.node.right.update_balances()
-
-            self.balance = self.node.left.height - self.node.right.height 
-        else: 
-            self.balance = 0 
-
-
-    def logical_predecessor(self, node):
-        ''' 
-        Find the biggest valued node in LEFT child
-        ''' 
-        node = node.left.node 
-        if node != None: 
-            while node.right != None:
-                if node.right.node == None: 
-                    return node 
-                else: 
-                    node = node.right.node  
-        return node 
-
-    #Original method not used
-    '''
-    def logical_successor(self):
-         
-        Find the smallest valued node in RIGHT child
-        
-        node = self.node.right.node
-        if node != None: # just a sanity check  
-            
-            while node.left != None:
-                debug("LS: traversing: " + str(node.key))
-                if node.left.node == None:
-                    print(type(node))
-                    return node
-                else: 
-                    node = node.left.node
-        print(type(node))
-        return node
-    '''
-    
-    #find and delete the smallest valued node in right child, return the key
-    def find_successor(self):        
-        parent = self
-        current = self.node.right
-        iteration = 1
-        if current.node != None:            
-            while current.node.left.node != None:
-                parent = current
-                current = current.node.left
-                debug("Curr: " + str(current.node.key))
-                if current.node.left == None: #we have found the successor
-                    #we need to sever the tie from the parent at parent.left                    
-                    key = current.node.key
-                    #call delete on the parent
-                    parent.delete(key)
-        #if it gets this far then the element is the right most element
-        key = current.node.key
-        parent.delete(key)
-        return key
-                
-    
-    def check_balanced(self):
-        if self == None or self.node == None: 
-            return True
-        
-        # We always need to make sure we are balanced 
-        self.update_heights()
-        self.update_balances()
-        return ((abs(self.balance) < 2) and self.node.left.check_balanced() and self.node.right.check_balanced())  
-        
-    def inorder_traverse(self):
-        if self.node == None:
-            debug("self.node == None")
-            return []            
-        
-        inlist = []
-        #UNDESCRIPTIVE VARIABLE NAMES
-        l = self.node.left.inorder_traverse()
-        debug("L" + str(l))
-        for i in l:
-            debug("i" + str( i))
-            inlist.append(i) 
-
-        inlist.append(self.node.key)
-        debug("Self.node.key = " + str(self.node.key))
-
-        r = self.node.right.inorder_traverse()
-        debug("R" + str(r))
-        for x in r:
-            debug("x" + str(x))
-            inlist.append(x) 
-    
-        return inlist 
-
-    def find_leafs(self):
-        if self.node == None:
-            return []
-        leafs = []
-        left = self.node.left.find_leafs()
-        for val in left:
-            leafs.append(val)
-            
-        if self.is_leaf():
-            leafs.append(self.node.key)
-        debug(str(self.node.key))
-
-        right = self.node.right.find_leafs()
-        for val in right:
-            leafs.append(val)
-        
-        return leafs
-        
-    def find_parents(self):
-        if self.node == None:
-            return []
-        parents = []
-        left = self.node.left.find_parents()
-        for val in left:
-            parents.append(val)
-        
-        if not self.is_leaf():
-            parents.append(self.node.key)
-            debug(str(self.node.key))
-
-        right = self.node.right.find_parents()
-        for val in right:
-            parents.append(val)
-
-        return parents
-    
-    #Delete a given element in an AVL Tree
-    def delete(self, target):
-        # if the value is not in the tree, print message
-        if self.node is None:
-            print("Value not found")
-        #if target is lower, then traverse the left subtree
-        elif target < self.node.key:
-            self.node.left.delete(target)
-        #if target is higher, then traverse the right subtree
-        elif target > self.node.key:
-            self.node.right.delete(target)
-        #found
-        else:
-            print("Deleting key [" + str(self.node.key) + "]")
-            if self.is_leaf():
-                debug("Deleting leaf")
-                self.node = None
-            #node has a right child but not a left child
-            elif self.node.right.node is not None and self.node.left.node is None:
-                #three way swap
-                debug("Swapping right node")
-                temp = self.node.right.node
-                self.node.right.node = None
-                self.node = temp
-            elif self.node.right.node is None and self.node.left.node is not None:
-                debug("Swapping left node")
-                temp = self.node.left.node
-                self.node.left.node = None               
-                self.node = temp
-            #else if the node has two children
+#input validation method
+def Get_User_Choice(max_opts):
+    is_int = False
+    while is_int == False:
+        try:
+            user_choice = int(input(""))
+            if user_choice > max_opts:                
+                print("Please enter a valid menu item.")
             else:
-                #get the leftmost leaf of the right tree
-                # need to clear the node in the logical_successor method
-                # and return the key only
-                debug("Swapping logical successor")
-                successor = self.find_successor()
-                self.node.key = successor
-        
-        
-    
-    def display(self, level=0, pref=''):
-        '''
-        Display the whole tree (but turned 90 degrees counter-clockwisely). Uses recursive def.
-        '''
-        
-        self.update_heights()  # Must update heights before balances 
-        self.update_balances()
-        
-        if(self.node != None):
-            #This doesn't work on python versions < 3
-            print ('-' * level * 2, pref, self.node.key, "[" + str(self.height) + ":" + str(self.balance) + "]", 'L' if self.is_leaf() else ' ')    
-            if self.node.left != None: 
-                self.node.left.display(level + 1, '<')
-            if self.node.left != None:
-                self.node.right.display(level + 1, '>')
-                
-    #Counts the number of nodes in a tree. This code is adapted from:    
-    #Awasthi, S. (Last Updated: Mar, 2019). Count Full Nodes in a Binary Tree.
-    #GeeksForGeeks, https://www.geeksforgeeks.org/count-full-nodes-binary-tree-iterative-recursive/
-                
-    def count_nodes(self):
-        if self == None:
-            return 0
+                is_int = True
+        except:
+            print("Please enter a valid menu item.")
+    return user_choice
 
-        queue = []
-        queue.append(self)
-
-        nodes = 0
-        while(len(queue) > 0):
-            tree = queue.pop(0)
-            if tree.node is not None:
-                if tree.node.left is not None and tree.node.right is not None:
-                    nodes += 1
-
-                if tree.node.left is not None:
-                    queue.append(tree.node.left)
-
-                if tree.node.right is not None:
-                    queue.append(tree.node.right)
-
-        return nodes
+#input validation for tree insertion
+def Get_User_Int():    
+    is_int = False
+    while is_int == False:
+        print("Please enter an integer.")
+        try:
+            user_choice = int(input(""))
+            is_int = True
+        except:
+            print("Incorrect Entry.")
+    return user_choice
 
 
-# Usage example
-if __name__ == "__main__": 
-    tree = AVLTree()
-    nodes = [50, 30, 70, 20, 40, 60, 80, 37, 36]
-    
-    
-    for i in nodes: 
-        tree.insert(i)
-    
-    tree.display()
-    print("nodes:", tree.count_nodes())
-    leafs = tree.find_leafs()
-    parents = tree.find_parents()
-    print("Leafs:" , leafs)
-    print("Parents", parents)
-    tree.delete(20)
-    tree.display()
-##    tree.display()
-##    print("\n")
-##    tree.delete(80)
-##    print("\n")
-##    tree.display()
-##    print("\n")
-##    tree.delete(70)
-##    print("\n")
-##    tree.display()
-##    print("\n")
-##    tree.insert(32)
-##    print("\n")
-##    tree.insert(32)
-##    print("\n")
-##    tree.display()
-##    print("\n")
-##    print("Delete Root")
-##    tree.delete(37) #delete root note
-##    print("\n")
-##    tree.display()
-   
+#control the menu choices depending on if the Tree has any nodes
+def Tree_Menu():
+    items = [
+        "1) Insert a new integer key into the AVL Tree.",
+        "2) Delete an integer key from the AVL Tree.",
+        "3) Print the in-order traversal sequence of the AVL Tree.",
+        "4) Print all leaf nodes and non-leaf nodes of the AVL Tree seperately.",
+        "5) Display the AVL tree, showing the height and balance factor.",
+        "6) Exit."
+        ]
+    for item in items:
+        print(item)
 
+def main():
+    menu()
 
+main()
