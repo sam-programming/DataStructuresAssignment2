@@ -101,7 +101,6 @@ class AVLTree():
     def rrotate(self):
         # Rotate left pivoting on self, an unbalanced part of the tree
         print('Rotating node ' + str(self.node.key) + ' right')
-        #silly debug says it is rotating 1 value but its rotating three
         A = self.node  #a is the node of the tree passed a parameter
         B = self.node.left.node  #b is a's left node
         T = B.right.node         #t is b's right node
@@ -128,11 +127,22 @@ class AVLTree():
         B = self.node.right.node 
         T = B.left.node 
         
+        #   A
+        #    \
+        #     B
+        #    / \
+        #   T   R
+        
         self.node = B 
         B.left.node = A 
         A.right.node = T 
         
-            
+        #
+        #   B
+        #  / \
+        # A   R
+        #  \
+        #   T
     def update_heights(self, recurse=True):
         if not self.node == None: 
             if recurse: 
