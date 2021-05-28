@@ -101,6 +101,7 @@ class AVLTree():
     def rrotate(self):
         # Rotate left pivoting on self, an unbalanced part of the tree
         print('Rotating node ' + str(self.node.key) + ' right')
+        #silly debug says it is rotating 1 value but its rotating three
         A = self.node  #a is the node of the tree passed a parameter
         B = self.node.left.node  #b is a's left node
         T = B.right.node         #t is b's right node
@@ -127,22 +128,11 @@ class AVLTree():
         B = self.node.right.node 
         T = B.left.node 
         
-        #   A
-        #    \
-        #     B
-        #    / \
-        #   T   R
-        
         self.node = B 
         B.left.node = A 
         A.right.node = T 
         
-        #
-        #   B
-        #  / \
-        # A   R
-        #  \
-        #   T
+            
     def update_heights(self, recurse=True):
         if not self.node == None: 
             if recurse: 
@@ -182,51 +172,29 @@ class AVLTree():
                     node = node.right.node  
         return node 
 
-    #Original method not used
-    '''
-    def logical_successor(self):
-         
-        Find the smallest valued node in RIGHT child
         
-        node = self.node.right.node
-        if node != None: # just a sanity check  
-            
-            while node.left != None:
-                debug("LS: traversing: " + str(node.key))
-                if node.left.node == None:
-                    print(type(node))
-                    return node
-                else: 
-                    node = node.left.node
-        print(type(node))
-        return node
-    '''
     #Method written by Samuel Warner
     # 18/05/21
     #Finds and deletes the smallest valued node in right child, return the key
-    def find_successor(self):
-        parent = self.node
-        current = self.node.right.node
+    #find and delete the smallest valued node in right child, return the key
+    def logical_successor(self):        
+        parent = self
+        current = self.node.right
         iteration = 1
-        if current != None:
-            while current.left != None:
-                if current.left.node == None: #we have found the successor
+        if current.node != None:            
+            while current.node.left.node != None:
+                parent = current
+                current = current.node.left
+                if current.node.left == None: #we have found the successor
                     #we need to sever the tie from the parent at parent.left                    
-                    key = current.key
-                    #if this is the first iteration, it will be parent.right that needs
-                    #to be deleted, otherwise parent left will have to be deleted
-                    if iteration == 1:
-                        parent.right.node = None
-                    else:
-                        parent.left.node = None
+                    key = current.node.key
+                    #call delete on the parent
+                    parent.delete(key)
                     return key
-                else:
-                    #update values
-                    iteration += 1
-                    parent = current
-                    current = current.left.node
-        #this return never hits in our code, just in case the method is called elsewhere
-        return current.key
+        #if it gets this far then the element is the right most element
+        key = current.node.key
+        parent.delete(key)
+        return key
                 
     
     def check_balanced(self):
@@ -244,7 +212,6 @@ class AVLTree():
             return []            
         
         inlist = []
-        #UNDESCRIPTIVE VARIABLE NAMES
         l = self.node.left.inorder_traverse()
         debug("L" + str(l))
         for i in l:
@@ -262,7 +229,7 @@ class AVLTree():
     
         return inlist
     
-    # Method written by Samuel Warner
+    # Method written by Samuel Warnerss
     # 17/05/21
     # Using recursion, traverses the tree and finds all leaf nodes
     def find_leafs(self):
@@ -319,7 +286,6 @@ class AVLTree():
             self.node.right.delete(target)
         #found
         else:
-            print("Deleting key [" + str(self.node.key) + "]")
             #if node is leaf, delete it and that's it
             if self.is_leaf():
                 debug("Deleting leaf")
@@ -343,7 +309,7 @@ class AVLTree():
                 # delete the node in the logical_successor method
                 # and return the leftmost node's key only
                 debug("Swapping logical successor")
-                successor = self.find_successor()
+                successor = self.logical_successor()
                 self.node.key = successor
         self.rebalance()
         
@@ -381,58 +347,13 @@ class AVLTree():
         self.update_balances()  
         if(self.node != None):
             #This doesn't work on python versions < 3
-            print ('-' * level * 2, pref, self.node.key, "[" + str(self.height) + ":" + str(self.balance) + "]", 'L' if self.is_leaf() else ' ')    
+            print ('-' * level * 2, pref, self.node.key, "[" + str(self.height) + ": " + str(self.balance) + "]", 'L' if self.is_leaf() else ' ')    
             if self.node.left != None: 
                 self.node.left.display(level + 1, '<')
             if self.node.left != None:
                 self.node.right.display(level + 1, '>')
 
                 
-
-#generate a set (unique vals) of random numbers
-def Generate_Set(n):
-    arr = []
-    valid = False
-    for count in range(n):
-        num = ran.randint(1, n*5 + 1)
-        #if the num generated is in the array, generate another
-        while num in arr:
-            num = ran.randint(1, n*5 + 1)
-        arr.append(num)
-    return arr
-
-# Testing
-if __name__ == "__main__": 
-    tree = AVLTree()
-    nodes = [50, 30, 70, 20, 40, 60, 80, 37, 36, 44]
-    for i in range(9, -1, -1):
-        print(nodes[i])
-
-    tree.display()
-    leafs = tree.find_leafs()
-    parents = tree.find_parents()
-    print("Leafs:" , leafs)
-    print("Parents", parents)
-##    tree.display()
-##    print("\n")
-##    tree.delete(80)
-##    print("\n")
-##    tree.display()
-##    print("\n")
-##    tree.delete(70)
-##    print("\n")
-##    tree.display()
-##    print("\n")
-##    tree.insert(32)
-##    print("\n")
-##    tree.insert(32)
-##    print("\n")
-##    tree.display()
-##    print("\n")
-##    print("Delete Root")
-##    tree.delete(37) #delete root note
-##    print("\n")
-##    tree.display()
    
 
 
